@@ -13,11 +13,10 @@
 
     <select id="selUser">
         SELECT iuser, uid, upw, nm, pic, firebase_token AS firebaseToken
-             , role
+             , role , provider_type as providerType
              , created_at AS createdAt, updated_at AS updatedAt
         FROM t_user
         WHERE
-
             <if test=" uid != null and uid != '' and providerType != null and providerType != '' ">
                 provider_type = #{providerType} AND uid = #{uid}
             </if>

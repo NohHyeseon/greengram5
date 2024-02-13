@@ -1,6 +1,10 @@
-package com.green.greengram4.security.auth2.userinfo;
+package com.green.greengram4.security.auth2;
 
+import com.green.greengram4.security.MyPrincipal;
+import com.green.greengram4.security.MyUserDetails;
 import com.green.greengram4.security.auth2.SocialProviderType;
+import com.green.greengram4.security.auth2.userinfo.OAuth2UserInfo;
+import com.green.greengram4.security.auth2.userinfo.OAuth2UserInfoFactory;
 import com.green.greengram4.user.UserMapper;
 import com.green.greengram4.user.model.UserEntity;
 import com.green.greengram4.user.model.UserSelDto;
@@ -20,7 +24,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CustomeOAuth2UserService extends DefaultOAuth2UserService {
+public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final UserMapper mapper;
     private final OAuth2UserInfoFactory factory;
 
@@ -46,7 +50,7 @@ public class CustomeOAuth2UserService extends DefaultOAuth2UserService {
         // ResgistraionId앞까지가 등록되있는거고 ID부터 kakao, naver부분
         //valueOf의; 리턴타입 socialprovidertype
 
-         user.getAttributes();//통신 후 가져온 자료들이 들어가있음 맵형식으로
+         //user.getAttributes();//통신 후 가져온 자료들이 들어가있음 맵형식으로
 
         OAuth2UserInfo oAuth2UserInfo = factory.getOAuth2userInfo(socialProviderType, user.getAttributes());
         UserSelDto dto = UserSelDto.builder()
@@ -54,13 +58,21 @@ public class CustomeOAuth2UserService extends DefaultOAuth2UserService {
                 .uid(oAuth2UserInfo.getId())
                 .build();
         UserEntity savedUser = mapper.selUser(dto); //null이면 소셜로그인으로 한번도 로그인한적없다
-        if(savedUser == null){
+        if(savedUser == null){ //회원가입처리하겠다
             savedUser = signupUser(oAuth2UserInfo, socialProviderType);
 
         }
 
+        MyPrincipal myPrincipal = MyPrincipal.builder()
+                .iuser(savedUser.getIuser())
+                .build();
+        myPrincipal.getRoles().add(savedUser.getRole());
 
-        return null;
+        return MyUserDetails.builder()
+                .userEntity(savedUser)
+                .attributes(user.getAttributes())
+                .myPrincipal(myPrincipal)
+                .build();
     }
 
     private UserEntity signupUser(OAuth2UserInfo oAuth2UserInfo, SocialProviderType socialProviderType){
@@ -75,7 +87,10 @@ public class CustomeOAuth2UserService extends DefaultOAuth2UserService {
 
         UserEntity entity = new UserEntity();
         entity.setIuser(dto.getIuser());
+        entity.setUid(dto.getUid());
         entity.setRole(dto.getRole());
+        entity.setNm(dto.getNm());
+        entity.setPic(dto.getPic());
         return entity;
 
     }

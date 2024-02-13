@@ -3,21 +3,27 @@ package com.green.greengram4.common;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.stereotype.Component;
+import org.springframework.util.SerializationUtils;
+
+import java.io.Serializable;
+import java.util.Base64;
+import java.util.Optional;
 
 @Component
-public class CookieUtils {
-    public Cookie getCookie(HttpServletRequest request, String name) {
+public class CookieUtils { //optinal를 쓰면 null체크 하지않아도됨?
+    public Optional<Cookie> getCookie(HttpServletRequest request, String name) {
         Cookie[] cookies = request.getCookies();
 
-        if(cookies != null && cookies.length > 0) {
-            for(Cookie cookie : cookies) {
-                if(name.equals(cookie.getName())) {
-                    return cookie;
+        if (cookies != null && cookies.length > 0) {
+            for (Cookie cookie : cookies) {
+                if (name.equals(cookie.getName())) {
+                    return Optional.of(cookie);
                 }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     public void setCookie(HttpServletResponse response, String name, String value, int maxAge) {
@@ -33,5 +39,20 @@ public class CookieUtils {
         cookie.setMaxAge(0);
         cookie.setPath("/");
         response.addCookie(cookie);
+    }
+
+    public String serialize(Object obj){
+
+        return Base64.getUrlEncoder().encodeToString(SerializationUtils.serialize(obj));
+    }
+
+    public <T> T deserialize(Cookie cookie, Class<T> cls) {
+        return cls.cast(
+
+                SerializationUtils.deserialize(
+                        Base64.getUrlDecoder().decode(cookie.getValue())
+                )
+        ); //cookie에 객체를 담고싶을 때 serialization사용
+
     }
 }

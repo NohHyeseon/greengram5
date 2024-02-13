@@ -1,5 +1,6 @@
 package com.green.greengram4.security;
 
+import com.green.greengram4.user.model.UserEntity;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,10 +14,11 @@ import java.util.stream.Collectors;
 
 @Data
 @Builder
-public class MyUserDetails implements UserDetails, OAuth2User {
+public class MyUserDetails implements UserDetails, OAuth2User {//순서대로 locallogin, sociallogin에 쓰임
 
-    private MyPrincipal myPrincipal;
+    private MyPrincipal myPrincipal; //jwt token만들때 객체자체를 토큰에박아버려서 필요함
     private Map<String, Object> attributes;
+    private UserEntity userEntity;//accessToken iuser, nm,pic,firebasetoken을 주고있는데
 
 
     @Override
@@ -38,7 +40,7 @@ public class MyUserDetails implements UserDetails, OAuth2User {
     public String getPassword() { return null; }
 
     @Override
-    public String getUsername() { return null; }
+    public String getUsername() { return userEntity.getUid(); }//security를 타서 null이 return되면안됨
 
     @Override
     public boolean isAccountNonExpired() {
