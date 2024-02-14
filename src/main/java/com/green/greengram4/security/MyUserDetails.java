@@ -40,7 +40,7 @@ public class MyUserDetails implements UserDetails, OAuth2User {//순서대로 lo
     public String getPassword() { return null; }
 
     @Override
-    public String getUsername() { return userEntity.getUid(); }//security를 타서 null이 return되면안됨
+    public String getUsername() { return userEntity == null ? null : userEntity.getUid();}//security를 타서 null이 return되면안됨
 
     @Override
     public boolean isAccountNonExpired() {
