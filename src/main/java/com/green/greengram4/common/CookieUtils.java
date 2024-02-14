@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.SerializationUtils;
 
-import java.io.Serializable;
 import java.util.Base64;
 import java.util.Optional;
 

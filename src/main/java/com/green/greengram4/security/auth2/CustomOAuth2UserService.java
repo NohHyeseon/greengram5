@@ -2,11 +2,10 @@ package com.green.greengram4.security.auth2;
 
 import com.green.greengram4.security.MyPrincipal;
 import com.green.greengram4.security.MyUserDetails;
-import com.green.greengram4.security.auth2.SocialProviderType;
 import com.green.greengram4.security.auth2.userinfo.OAuth2UserInfo;
 import com.green.greengram4.security.auth2.userinfo.OAuth2UserInfoFactory;
 import com.green.greengram4.user.UserMapper;
-import com.green.greengram4.user.model.UserEntity;
+import com.green.greengram4.user.model.UserModel;
 import com.green.greengram4.user.model.UserSelDto;
 import com.green.greengram4.user.model.UserSignupProcDto;
 import lombok.RequiredArgsConstructor;
@@ -57,7 +56,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 .providerType(socialProviderType.name())
                 .uid(oAuth2UserInfo.getId())
                 .build();
-        UserEntity savedUser = mapper.selUser(dto); //null이면 소셜로그인으로 한번도 로그인한적없다
+        UserModel savedUser = mapper.selUser(dto); //null이면 소셜로그인으로 한번도 로그인한적없다
         if(savedUser == null){ //회원가입처리하겠다
             savedUser = signupUser(oAuth2UserInfo, socialProviderType);
 
@@ -69,13 +68,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         myPrincipal.getRoles().add(savedUser.getRole());
 
         return MyUserDetails.builder()
-                .userEntity(savedUser)
+                .userModel(savedUser)
                 .attributes(user.getAttributes())
                 .myPrincipal(myPrincipal)
                 .build();
     }
 
-    private UserEntity signupUser(OAuth2UserInfo oAuth2UserInfo, SocialProviderType socialProviderType){
+    private UserModel signupUser(OAuth2UserInfo oAuth2UserInfo, SocialProviderType socialProviderType){
         UserSignupProcDto dto = new UserSignupProcDto();
         dto.setProviderType(socialProviderType.name());
         dto.setUid(oAuth2UserInfo.getId());//kakao, naver에서의 아이디
@@ -85,7 +84,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         dto.setRole("USER");
         int result = mapper.insUser(dto);
 
-        UserEntity entity = new UserEntity();
+        UserModel entity = new UserModel();
         entity.setIuser(dto.getIuser());
         entity.setUid(dto.getUid());
         entity.setRole(dto.getRole());

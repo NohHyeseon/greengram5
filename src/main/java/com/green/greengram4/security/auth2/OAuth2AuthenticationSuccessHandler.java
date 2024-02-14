@@ -5,7 +5,7 @@ import com.green.greengram4.common.CookieUtils;
 import com.green.greengram4.security.JwtTokenProvider;
 import com.green.greengram4.security.MyPrincipal;
 import com.green.greengram4.security.MyUserDetails;
-import com.green.greengram4.user.model.UserEntity;
+import com.green.greengram4.user.model.UserModel;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,9 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-import org.springframework.security.web.util.RedirectUrlBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -70,17 +68,17 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         cookieUtils.deleteCookie(response, "rt");
         cookieUtils.setCookie(response, "rt", rt, rtCookieMaxAge);
 
-        UserEntity userEntity = myUserDetails.getUserEntity();
+        UserModel userModel = myUserDetails.getUserModel();
 
 
         return UriComponentsBuilder.fromUriString(targetUrl)
                                     .queryParam("access_token", at)
-                                    .queryParam("iuser", userEntity.getIuser())
-                                    .queryParam("nm", userEntity.getNm()).encode()
-                                    .queryParam("pic", userEntity.getPic())
-                                    .queryParam("firebase_token", userEntity.getFirebaseToken())
+                                    .queryParam("iuser", userModel.getIuser())
+                                    .queryParam("nm", userModel.getNm()).encode()
+                                    .queryParam("pic", userModel.getPic())
+                                    .queryParam("firebase_token", userModel.getFirebaseToken())
                                     .build()
-                                    .toUriString();
+                                    .toUriString(); // sociallogin끝나고 프론트에
     }
 
     private void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
