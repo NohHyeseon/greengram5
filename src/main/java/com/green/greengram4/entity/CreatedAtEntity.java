@@ -11,7 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Data
-@MappedSuperclass
+@MappedSuperclass//컬럼들이 상속받게 해줌
 @EntityListeners(AuditingEntityListener.class)
 public class CreatedAtEntity {
     @CreatedDate

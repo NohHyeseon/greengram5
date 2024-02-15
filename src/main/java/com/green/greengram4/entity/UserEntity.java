@@ -3,7 +3,10 @@ package com.green.greengram4.entity;
 import com.green.greengram4.common.ProviderTypeEnum;
 import com.green.greengram4.common.RoleEnum;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 @Data
@@ -14,6 +17,9 @@ import org.hibernate.annotations.ColumnDefault;
 
         )
 })
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserEntity extends BaseEntity {
     @Id //pk줄 때
     @Column(columnDefinition = "BIGINT UNSIGNED")
