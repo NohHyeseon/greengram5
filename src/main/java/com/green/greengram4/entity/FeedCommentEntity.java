@@ -8,7 +8,7 @@ import lombok.Data;
 @Table(name ="t_feed_comment")
 public class FeedCommentEntity extends BaseEntity {
     @Id
-    @Column(columnDefinition = "BIGINT UNSIGNED",name ="i_feed_comment")
+    @Column(columnDefinition = "BIGINT UNSIGNED",name ="ifeed_comment")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long ifeedCommnet;
 
@@ -18,7 +18,7 @@ public class FeedCommentEntity extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name ="ifeed", nullable = false)
-    private FeedEntity ifeed;
+    private FeedEntity feedEntity;
 
 
     @Column(length = 500, nullable = false)

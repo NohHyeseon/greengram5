@@ -1,9 +1,9 @@
 package com.green.greengram4.feed;
 
-import com.google.firebase.database.core.Repo;
 import com.green.greengram4.common.Const;
 import com.green.greengram4.common.MyFileUtils;
 import com.green.greengram4.common.ResVo;
+import com.green.greengram4.entity.FeedCommentEntity;
 import com.green.greengram4.entity.FeedEntity;
 import com.green.greengram4.entity.FeedPicsEntity;
 import com.green.greengram4.entity.UserEntity;
@@ -15,13 +15,12 @@ import com.green.greengram4.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -34,6 +33,7 @@ public class FeedService {
     private final FeedCommentMapper commentMapper;
     private final FeedRepository repository;
     private final UserRepository userRepository;
+    private final FeedCommentRepository CommentRepository;
     private final AuthenticationFacade authenticationFacade;
     private final MyFileUtils myFileUtils;
 
@@ -69,7 +69,7 @@ public class FeedService {
                 .map(item -> FeedPicsEntity.builder()
                         .pic(item) //item으로 사진이 들어왔음
                         .feedEntity(feedEntity)
-                        .build() )
+                        .build())
                 .collect(Collectors.toList());
         feedEntity.getFeedPicsEntityList().addAll(feedPicsEntityList);
         return pDto;
@@ -98,40 +98,47 @@ public class FeedService {
 //    }
 
     public List<FeedSelVo> getFeedAll(FeedSelDto dto, Pageable pageable) {
-        List<FeedSelVo> list = null;
-        if(dto.getIsFavList() == 0 && dto.getTargetIuser()>0){
+        List<FeedEntity> feedEntityList = null;
+        if (dto.getIsFavList() == 0 && dto.getTargetIuser() > 0) {
             UserEntity userEntity = new UserEntity();
-            userEntity.setIuser( (long)dto.getLoginedIuser());
-            List<FeedEntity> feedEntityList = repository.findAllByUserEntityOrderByIfeedDesc(userEntity,pageable);
-
+            userEntity.setIuser((long) dto.getTargetIuser());
+            feedEntityList = repository.findAllByUserEntityOrderByIfeedDesc(userEntity, pageable);
         }
-        System.out.println("!!!!!");
+        return feedEntityList == null
+                ? new ArrayList<>()
+                : feedEntityList.stream().map(item -> {
+
+                    List<FeedCommentSelVo> cmtList = CommentRepository.findAllTop4ByFeedEntity(item)
+                            .stream()
+                            .map( cmt -> FeedCommentSelVo.builder()
+                                    .ifeedComment(cmt.getIfeedCommnet().intValue())
+                                    .comment(cmt.getComment())
+                                    .createdAt(cmt.getCreatedAt().toString())
+                                    .writerIuser(cmt.getUserEntity().getIuser().intValue())
+                                    .writerNm(cmt.getUserEntity().getNm())
+                                    .writerPic(cmt.getUserEntity().getPic())
+                                    .build()
 
 
+                    ).collect(Collectors.toList());
 
-         mapper.selFeedAll(dto);
 
-
-        FeedCommentSelDto fcDto = new FeedCommentSelDto();
-        fcDto.setStartIdx(0);
-        fcDto.setRowCount(Const.FEED_COMMENT_FIRST_CNT);
-
-        for (FeedSelVo vo : list) {
-            List<String> pics = picsMapper.selFeedPicsAll(vo.getIfeed());
-            vo.setPics(pics);
-
-            fcDto.setIfeed(vo.getIfeed());
-            List<FeedCommentSelVo> comments = commentMapper.selFeedCommentAll(fcDto);
-            vo.setComments(comments);
-
-            if (comments.size() == Const.FEED_COMMENT_FIRST_CNT) {
-                vo.setIsMoreComment(1);
-                comments.remove(comments.size() - 1);
-            }
-        }
-        return list;
+                    UserEntity userEntity = item.getUserEntity();
+                    return FeedSelVo.builder()
+                            .ifeed(item.getIfeed().intValue())
+                            .contents(item.getContents())
+                            .location(item.getLocation())
+                            .createdAt(item.getCreatedAt().toString())
+                            .writerIuser(item.getUserEntity().getIuser().intValue())
+                            .writerNm(userEntity.getNm())
+                            .writerPic(userEntity.getPic())
+                            .comments(cmtList)
+                            .build();
+                }
+        ).collect(Collectors.toList());
     }
-
+    //function -> 파라미터, 리턴타입 둘 다 있는게 function
+    //consumer -> 소비만 함 그래서 void타입
 
 
 //    public List<FeedSelVo> getFeedAll(FeedSelDto dto) {

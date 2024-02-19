@@ -16,7 +16,7 @@ import org.hibernate.annotations.ColumnDefault;
                 columnNames = {"provider_type", "uid"} //컬럼명으로 적어야함
 
         )
-})
+}) //복합유니크였을때만 사용가능하다??/
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,8 +27,8 @@ public class UserEntity extends BaseEntity {
     private Long iuser;
 
     @Column(length = 10, name = "provider_type", nullable = false) //columdefinition<-coment남길수 있음
-    @Enumerated(value = EnumType.STRING) //Enum에서 쓰는 이름 그대로 사용하겠다
-    @ColumnDefault("'LOCAl'")
+    @Enumerated(value = EnumType.STRING) //Enum에서 쓰는 이름 그대로 사용하겠다(문자열)
+    @ColumnDefault("'LOCAl'")//enum일땐 의미 없음
     private ProviderTypeEnum providerType;
 
     @Column(length = 100, nullable = false)
