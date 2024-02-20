@@ -3,10 +3,7 @@ package com.green.greengram4.feed;
 import com.green.greengram4.common.Const;
 import com.green.greengram4.common.MyFileUtils;
 import com.green.greengram4.common.ResVo;
-import com.green.greengram4.entity.FeedCommentEntity;
-import com.green.greengram4.entity.FeedEntity;
-import com.green.greengram4.entity.FeedPicsEntity;
-import com.green.greengram4.entity.UserEntity;
+import com.green.greengram4.entity.*;
 import com.green.greengram4.exception.FeedErrorCode;
 import com.green.greengram4.exception.RestApiException;
 import com.green.greengram4.feed.model.*;
@@ -34,6 +31,7 @@ public class FeedService {
     private final FeedRepository repository;
     private final UserRepository userRepository;
     private final FeedCommentRepository CommentRepository;
+    private final FeedFavRepository feedFavRepository;
     private final AuthenticationFacade authenticationFacade;
     private final MyFileUtils myFileUtils;
 
@@ -97,6 +95,7 @@ public class FeedService {
 //        return pDto;
 //    }
 
+    @Transactional
     public List<FeedSelVo> getFeedAll(FeedSelDto dto, Pageable pageable) {
         List<FeedEntity> feedEntityList = null;
         if (dto.getIsFavList() == 0 && dto.getTargetIuser() > 0) {
@@ -107,6 +106,20 @@ public class FeedService {
         return feedEntityList == null
                 ? new ArrayList<>()
                 : feedEntityList.stream().map(item -> {
+
+                    FeedFavIds feedFavIds = new FeedFavIds();
+                    feedFavIds.setIuser((long)authenticationFacade.getLoginUserPk());
+                    feedFavIds.setIfeed(item.getIfeed());
+                    int isFav = feedFavRepository.findById(feedFavIds).isPresent() ? 1 : 0;
+
+
+
+                    List<String> picsList = item.getFeedPicsEntityList()
+                            .stream()
+                            .map(FeedPicsEntity -> FeedPicsEntity.getPic()
+                            ).collect(Collectors.toList());
+
+
 
                     List<FeedCommentSelVo> cmtList = CommentRepository.findAllTop4ByFeedEntity(item)
                             .stream()
@@ -124,7 +137,7 @@ public class FeedService {
                     //cmtList가 4개이면> isMoreComment = 1 cmtList에 마지막하나는 제거
                     //else > isMoreComment = 0, cmtList변화는 없다
 
-                    int isMoreComment= 0;
+                    int isMoreComment = 0;
                     if (cmtList.size() == 4) {
                         isMoreComment = 1;
                         cmtList.remove(cmtList.size() - 1);
@@ -139,7 +152,9 @@ public class FeedService {
                             .writerNm(userEntity.getNm())
                             .writerPic(userEntity.getPic())
                             .isMoreComment(isMoreComment)
+                            .pics(picsList)
                             .comments(cmtList)
+                            .isFav(isFav)
                             .build();
                 }
         ).collect(Collectors.toList());
