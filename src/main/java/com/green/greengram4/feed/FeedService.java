@@ -110,7 +110,7 @@ public class FeedService {
 
                     List<FeedCommentSelVo> cmtList = CommentRepository.findAllTop4ByFeedEntity(item)
                             .stream()
-                            .map( cmt -> FeedCommentSelVo.builder()
+                            .map(cmt -> FeedCommentSelVo.builder() //feedCommentEntity를 FeedCommentSelvo로 변환
                                     .ifeedComment(cmt.getIfeedCommnet().intValue())
                                     .comment(cmt.getComment())
                                     .createdAt(cmt.getCreatedAt().toString())
@@ -120,9 +120,15 @@ public class FeedService {
                                     .build()
 
 
-                    ).collect(Collectors.toList());
+                            ).collect(Collectors.toList());
+                    //cmtList가 4개이면> isMoreComment = 1 cmtList에 마지막하나는 제거
+                    //else > isMoreComment = 0, cmtList변화는 없다
 
-
+                    int isMoreComment= 0;
+                    if (cmtList.size() == 4) {
+                        isMoreComment = 1;
+                        cmtList.remove(cmtList.size() - 1);
+                    }
                     UserEntity userEntity = item.getUserEntity();
                     return FeedSelVo.builder()
                             .ifeed(item.getIfeed().intValue())
@@ -132,6 +138,7 @@ public class FeedService {
                             .writerIuser(item.getUserEntity().getIuser().intValue())
                             .writerNm(userEntity.getNm())
                             .writerPic(userEntity.getPic())
+                            .isMoreComment(isMoreComment)
                             .comments(cmtList)
                             .build();
                 }
