@@ -97,68 +97,81 @@ public class FeedService {
 
     @Transactional
     public List<FeedSelVo> getFeedAll(FeedSelDto dto, Pageable pageable) {
-        List<FeedEntity> feedEntityList = null;
-        if (dto.getIsFavList() == 0 && dto.getTargetIuser() > 0) {
-            UserEntity userEntity = new UserEntity();
-            userEntity.setIuser((long) dto.getTargetIuser());
-            feedEntityList = repository.findAllByUserEntityOrderByIfeedDesc(userEntity, pageable);
-        }
-        return feedEntityList == null
-                ? new ArrayList<>()
-                : feedEntityList.stream().map(item -> {
-
-                    FeedFavIds feedFavIds = new FeedFavIds();
-                    feedFavIds.setIuser((long)authenticationFacade.getLoginUserPk());
-                    feedFavIds.setIfeed(item.getIfeed());
-                    int isFav = feedFavRepository.findById(feedFavIds).isPresent() ? 1 : 0;
-
-
-
-                    List<String> picsList = item.getFeedPicsEntityList()
-                            .stream()
-                            .map(FeedPicsEntity -> FeedPicsEntity.getPic()
-                            ).collect(Collectors.toList());
-
-
-
-                    List<FeedCommentSelVo> cmtList = CommentRepository.findAllTop4ByFeedEntity(item)
-                            .stream()
-                            .map(cmt -> FeedCommentSelVo.builder() //feedCommentEntity를 FeedCommentSelvo로 변환
-                                    .ifeedComment(cmt.getIfeedCommnet().intValue())
-                                    .comment(cmt.getComment())
-                                    .createdAt(cmt.getCreatedAt().toString())
-                                    .writerIuser(cmt.getUserEntity().getIuser().intValue())
-                                    .writerNm(cmt.getUserEntity().getNm())
-                                    .writerPic(cmt.getUserEntity().getPic())
-                                    .build()
-
-
-                            ).collect(Collectors.toList());
-                    //cmtList가 4개이면> isMoreComment = 1 cmtList에 마지막하나는 제거
-                    //else > isMoreComment = 0, cmtList변화는 없다
-
-                    int isMoreComment = 0;
-                    if (cmtList.size() == 4) {
-                        isMoreComment = 1;
-                        cmtList.remove(cmtList.size() - 1);
-                    }
-                    UserEntity userEntity = item.getUserEntity();
-                    return FeedSelVo.builder()
-                            .ifeed(item.getIfeed().intValue())
-                            .contents(item.getContents())
-                            .location(item.getLocation())
-                            .createdAt(item.getCreatedAt().toString())
-                            .writerIuser(item.getUserEntity().getIuser().intValue())
-                            .writerNm(userEntity.getNm())
-                            .writerPic(userEntity.getPic())
-                            .isMoreComment(isMoreComment)
-                            .pics(picsList)
-                            .comments(cmtList)
-                            .isFav(isFav)
-                            .build();
-                }
-        ).collect(Collectors.toList());
+        List<FeedSelVo> list = repository.selFeedAll((long)authenticationFacade.getLoginUserPk()
+                ,dto.getTargetIuser()
+                ,pageable);
+        return list;
     }
+
+
+
+
+
+
+//    @Transactional
+//    public List<FeedSelVo> getFeedAll(FeedSelDto dto, Pageable pageable) {
+//        List<FeedEntity> feedEntityList = null;
+//        if (dto.getIsFavList() == 0 && dto.getTargetIuser() > 0) {
+//            UserEntity userEntity = new UserEntity();
+//            userEntity.setIuser((long) dto.getTargetIuser());
+//            feedEntityList = repository.findAllByUserEntityOrderByIfeedDesc(userEntity, pageable);
+//        }
+//        return feedEntityList == null
+//                ? new ArrayList<>()
+//                : feedEntityList.stream().map(item -> {
+//
+//                    FeedFavIds feedFavIds = new FeedFavIds();
+//                    feedFavIds.setIuser((long)authenticationFacade.getLoginUserPk());
+//                    feedFavIds.setIfeed(item.getIfeed());
+//                    int isFav = feedFavRepository.findById(feedFavIds).isPresent() ? 1 : 0;
+//
+//
+//
+//                    List<String> picsList = item.getFeedPicsEntityList()
+//                            .stream()
+//                            .map(FeedPicsEntity -> FeedPicsEntity.getPic()
+//                            ).collect(Collectors.toList());
+//
+//
+//
+//                    List<FeedCommentSelVo> cmtList = CommentRepository.findAllTop4ByFeedEntity(item)
+//                            .stream()
+//                            .map(cmt -> FeedCommentSelVo.builder() //feedCommentEntity를 FeedCommentSelvo로 변환
+//                                    .ifeedComment(cmt.getIfeedCommnet().intValue())
+//                                    .comment(cmt.getComment())
+//                                    .createdAt(cmt.getCreatedAt().toString())
+//                                    .writerIuser(cmt.getUserEntity().getIuser().intValue())
+//                                    .writerNm(cmt.getUserEntity().getNm())
+//                                    .writerPic(cmt.getUserEntity().getPic())
+//                                    .build()
+//
+//
+//                            ).collect(Collectors.toList());
+//                    //cmtList가 4개이면> isMoreComment = 1 cmtList에 마지막하나는 제거
+//                    //else > isMoreComment = 0, cmtList변화는 없다
+//
+//                    int isMoreComment = 0;
+//                    if (cmtList.size() == 4) {
+//                        isMoreComment = 1;
+//                        cmtList.remove(cmtList.size() - 1);
+//                    }
+//                    UserEntity userEntity = item.getUserEntity();
+//                    return FeedSelVo.builder()
+//                            .ifeed(item.getIfeed().intValue())
+//                            .contents(item.getContents())
+//                            .location(item.getLocation())
+//                            .createdAt(item.getCreatedAt().toString())
+//                            .writerIuser(item.getUserEntity().getIuser().intValue())
+//                            .writerNm(userEntity.getNm())
+//                            .writerPic(userEntity.getPic())
+//                            .isMoreComment(isMoreComment)
+//                            .pics(picsList)
+//                            .comments(cmtList)
+//                            .isFav(isFav)
+//                            .build();
+//                }
+//        ).collect(Collectors.toList());
+//    }
     //function -> 파라미터, 리턴타입 둘 다 있는게 function
     //consumer -> 소비만 함 그래서 void타입
 
