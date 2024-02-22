@@ -16,7 +16,7 @@ public class FeedEntity extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long ifeed;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY) //즉시 로딩시켜주는것
     @JoinColumn(name ="iuser", nullable = false)
     private UserEntity userEntity;
 

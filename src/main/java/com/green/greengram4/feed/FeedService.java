@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.html.parser.Entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -96,16 +97,11 @@ public class FeedService {
 //    }
 
     @Transactional
-    public List<FeedSelVo> getFeedAll(FeedSelDto dto, Pageable pageable) {
-        List<FeedSelVo> list = repository.selFeedAll((long)authenticationFacade.getLoginUserPk()
-                ,dto.getTargetIuser()
-                ,pageable);
-        return list;
+    public List<FeedEntity> getFeedAll(FeedSelDto dto, Pageable pageable) {
+        dto.setLoginIuser(authenticationFacade.getLoginUserPk());
+        List<FeedEntity> list = repository.selFeedAll(dto, pageable);
+        return null;
     }
-
-
-
-
 
 
 //    @Transactional

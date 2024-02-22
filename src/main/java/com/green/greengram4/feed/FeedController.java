@@ -1,6 +1,7 @@
 package com.green.greengram4.feed;
 
 import com.green.greengram4.common.ResVo;
+import com.green.greengram4.entity.FeedEntity;
 import com.green.greengram4.feed.model.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -38,11 +39,11 @@ public class FeedController {
     @GetMapping
     @Operation(summary = "피드 리스트", description = "전체 피드 리스트, 특정 사용자 프로필 화면에서 사용할 피드 리스트, 한 페이지 30개 피드 가져옴" +
             "<br><br>page: 페이지<br>loginedIuser: 로그인한 유저 pk")
-    public List<FeedSelVo> getFeedAll(FeedSelDto dto, @PageableDefault(page =1, size =30) Pageable pageable ) {
+    public List<FeedEntity> getFeedAll(FeedSelDto dto, @PageableDefault(page =1, size =30) Pageable pageable ) {
         log.info("dto: {}", dto);
         log.info("page: {}", pageable);
 
-        List<FeedSelVo> list = service.getFeedAll(dto, pageable);
+        List<FeedEntity> list = service.getFeedAll(dto, pageable);
         log.info("list: {}", list);
         return list;
     }
