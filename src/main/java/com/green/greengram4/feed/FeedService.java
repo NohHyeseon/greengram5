@@ -97,10 +97,49 @@ public class FeedService {
 //    }
 
     @Transactional
-    public List<FeedEntity> getFeedAll(FeedSelDto dto, Pageable pageable) {
-        dto.setLoginIuser(authenticationFacade.getLoginUserPk());
-        List<FeedEntity> list = repository.selFeedAll(dto, pageable);
-        return null;
+    public List<FeedSelVo> getFeedAll(FeedSelDto dto, Pageable pageable) {
+        long loginIuser = authenticationFacade.getLoginUserPk();
+        dto.setLoginIuser(loginIuser);
+        final List<FeedEntity> list = repository.selFeedAll(dto, pageable);
+        final List<FeedPicsEntity> picList = repository.selFeedPicsAll(list);
+        final List<FeedFavEntity> favList = dto.getIsFavList() == 1 ? null : repository.selFeedFavAllByMe(list, loginIuser);
+        final List<FeedCommentSelVo> cmtList = commentMapper.selFeedCommentEachTop4(list);
+
+        return list.stream().map(item -> {
+            List<FeedCommentSelVo> eachCommentList = cmtList.stream().filter(
+                    cmt -> cmt.getIfeed() == item.getIfeed()).collect(Collectors.toList());
+
+                    int isMoreComment = 0;
+                    if (eachCommentList.size() == 4) {
+                        isMoreComment =1;
+                        eachCommentList.remove(eachCommentList.size() - 1);
+                    }
+
+
+            return FeedSelVo.builder()
+                    .ifeed(item.getIfeed().intValue())
+                    .contents(item.getContents())
+                    .location(item.getLocation())
+                    .createdAt(item.getCreatedAt().toString())
+                    .writerIuser(item.getUserEntity().getIuser().intValue())
+                    .writerNm(item.getUserEntity().getNm())
+                    .writerPic(item.getUserEntity().getPic())
+                    .pics(picList.stream().filter(pic ->
+                                    pic.getFeedEntity().getIfeed() == item.getIfeed()
+                            )
+                            .map(pic -> pic.getPic())
+                            .collect(Collectors.toList()))
+                    .isFav(dto.getIsFavList() == 1
+                            ? 1
+                            : favList.stream().anyMatch(fav -> fav.getFeedEntity().getIfeed() == item.getIfeed())
+                            ? 1
+                            : 0)
+                    .comments(eachCommentList)
+                    .isMoreComment(isMoreComment)
+                    .build();
+        }
+        ).collect(Collectors.toList());
+
     }
 
 

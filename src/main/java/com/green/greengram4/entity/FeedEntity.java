@@ -32,8 +32,5 @@ public class FeedEntity extends BaseEntity{
     private List<FeedPicsEntity> feedPicsEntityList = new ArrayList<>();
     //ㄱ현재 entity와 위 entity가 양방향이므로  @ToString.exclude가 없으면 무한루프 돌 수 있음
 
-    @ToString.Exclude
-    @OneToMany(mappedBy = "feedEntity")
-    private List<FeedFavEntity> feedFavList = new ArrayList();
 
 }
