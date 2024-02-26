@@ -27,7 +27,7 @@ public class FeedQdslRepositoryImpl implements FeedQdslRepository {
         JPAQuery<FeedEntity> jpaQuery = jpaQueryFactory.select(feedEntity)
                 //(whereTargetUser(targetIuser),whereTargetUser(targetIuser)) 쉼표로 and조건 사용가능
                 .from(feedEntity)
-                .join(feedEntity.userEntity).fetchJoin()
+                 .join(feedEntity.userEntity).fetchJoin()
                 .orderBy(feedEntity.ifeed.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
